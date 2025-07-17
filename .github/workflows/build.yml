@@ -1,3 +1,9 @@
+name: Android Build
+
+on:
+  push:
+    branches: [ main ]
+
 jobs:
   build:
     name: Build app
