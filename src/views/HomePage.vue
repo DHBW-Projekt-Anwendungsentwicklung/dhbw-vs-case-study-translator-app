@@ -35,7 +35,7 @@
 
       <div class="divider">
         <div class="line"></div>
-        <ion-button fill="clear" size="small" class="swap-button">
+        <ion-button fill="clear" size="small" class="swap-button" @click="swapLanguages">
           <ion-icon :icon="swapVertical" size="large"></ion-icon>
         </ion-button>
         <div class="line"></div>
@@ -81,6 +81,7 @@
   </ion-page>
 </template>
 
+
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import {
@@ -89,23 +90,19 @@ import {
   IonTextarea, IonButton, loadingController, toastController
 } from '@ionic/vue'
 import { swapVertical, copyOutline, volumeHighOutline } from 'ionicons/icons'
+import { translate as mlkitTranslation} from '@/services/translation'
 
 const sourceLanguage = ref('')
 const targetLanguage = ref('')
 const sourceText = ref('')
 const translatedText = ref('')
 
-function debounce(fn: (...a: any[]) => any, d = 300) {
+function debounce(fn: (...a: any[]) => any, d = 500) {
   let t: ReturnType<typeof setTimeout> | undefined
   return (...a: any[]) => {
     clearTimeout(t)
     t = setTimeout(() => fn(...a), d)
   }
-}
-
-async function translate(text: string, from: string, to: string) {
-  await new Promise(r => setTimeout(r, 400))
-  return `[${from}→${to}] ${text}`
 }
 
 const debouncedTranslate = debounce(async () => {
@@ -116,7 +113,7 @@ const debouncedTranslate = debounce(async () => {
   const loader = await loadingController.create({ message: 'Übersetze …' })
   await loader.present()
   try {
-    translatedText.value = await translate(
+    translatedText.value = await mlkitTranslation(
       sourceText.value,
       sourceLanguage.value,
       targetLanguage.value
@@ -132,6 +129,13 @@ const debouncedTranslate = debounce(async () => {
     loader.dismiss()
   }
 }, 300)
+
+function swapLanguages() {
+  const tmp = sourceLanguage.value
+  sourceLanguage.value = targetLanguage.value
+  targetLanguage.value = tmp
+  sourceText.value = translatedText.value
+}
 
 watch([sourceText, sourceLanguage, targetLanguage], debouncedTranslate)
 
