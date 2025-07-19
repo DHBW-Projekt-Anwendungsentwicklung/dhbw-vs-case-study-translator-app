@@ -38,6 +38,13 @@
         <ion-button fill="clear" size="small" class="swap-button" @click="swapLanguages">
           <ion-icon :icon="swapVertical" size="large"></ion-icon>
         </ion-button>
+        <ion-toast
+        :is-open="toastOpen"
+        message="Text in die Zwischenablage kopiert"
+        position="bottom"
+        :duration="2000"
+        @didDismiss="toastOpen = false"
+        />
         <div class="line"></div>
       </div>
 
@@ -72,7 +79,7 @@
              class="translate-spinner"/>
         </ion-item>
 
-        <ion-button fill="clear" size="small" class="mini copy-button">
+        <ion-button fill="clear" size="small" class="mini copy-button" @click="copyToClipboard">
           <ion-icon :icon="copyOutline"></ion-icon>
         </ion-button>
 
@@ -92,6 +99,7 @@ import {
   IonList, IonItem, IonSelect, IonSelectOption, onIonViewDidEnter,
   IonTextarea, IonButton, loadingController, toastController
 } from '@ionic/vue'
+import { Clipboard } from '@capacitor/clipboard'
 import { swapVertical, copyOutline, volumeHighOutline } from 'ionicons/icons'
 import { translate as mlkitTranslation} from '@/services/translation'
 import { SpeechSynthesis, QueueStrategy } from '@capawesome-team/capacitor-speech-synthesis'
@@ -100,6 +108,7 @@ const sourceLanguage = ref('')
 const targetLanguage = ref('')
 const sourceText = ref('')
 const translatedText = ref('')
+const toastOpen = ref(false)
 const isDownloadingModel = ref(false)
 const isTranslating = ref(false)
 
@@ -155,6 +164,16 @@ function swapLanguages() {
 }
 
 watch([sourceText, sourceLanguage, targetLanguage], debouncedTranslate)
+
+async function copyToClipboard() {
+  await Clipboard.write({ string: translatedText.value })
+  const toast = await toastController.create({
+    message: 'Text in die Zwischenablage kopiert',
+    duration: 2000,
+    color: 'dark'
+  })
+  await toast.present()
+}
 
 const langTag: Record<string,string> = {
   de: 'de-DE',
