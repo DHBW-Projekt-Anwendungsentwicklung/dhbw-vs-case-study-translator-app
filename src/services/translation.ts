@@ -16,13 +16,21 @@ async function ensureModel(code: string) {
     downloaded.add(code)
 }
 
-export async function translate(text: string, sourceLanguage: string, targetLanguage: string) {
-    await Promise.all([ensureModel(sourceLanguage), ensureModel(targetLanguage)])
-
-    const { text: result } = await Translation.translate({
-        text,
-        sourceLanguage: map[sourceLanguage],
-        targetLanguage: map[targetLanguage],
+export async function translate(
+    text: string, sourceLanguage: string, targetLanguage: string,
+    onDownload?: (downloading: boolean) => void
+) {
+    const need = [sourceLanguage, targetLanguage].filter(code => !downloaded.has(code))
+    if (need.length && onDownload) onDownload(true)
+    await Promise.all(
+    need.map(async code => {
+      await Translation.downloadModel({ language: map[code] })
+      downloaded.add(code)
     })
-    return result
+  )
+  if (need.length && onDownload) onDownload(false)
+const { text: result } = await Translation.translate({
+    text, sourceLanguage: map[sourceLanguage], targetLanguage: map[targetLanguage],
+  })
+  return result
 }
