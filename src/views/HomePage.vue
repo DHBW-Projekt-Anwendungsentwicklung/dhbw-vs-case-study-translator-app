@@ -69,11 +69,11 @@
           ></ion-textarea>
         </ion-item>
 
-        <ion-button fill="clear" size="small" class="mini copy-btn">
+        <ion-button fill="clear" size="small" class="mini copy-button">
           <ion-icon :icon="copyOutline"></ion-icon>
         </ion-button>
 
-        <ion-button fill="clear" size="small" class="mini speak-btn">
+        <ion-button fill="clear" size="small" class="mini speak-button">
           <ion-icon :icon="volumeHighOutline"></ion-icon>
         </ion-button>
       </div>
@@ -182,7 +182,6 @@ async function speakText () {}
 .top-gap {
   margin-top: 24px;
 }
-
 .target-box {
   position: relative;
   margin-top: 12px;
@@ -190,8 +189,8 @@ async function speakText () {}
 .mini {
   position: absolute;
   bottom: 12px;
-  width: 40px;
-  height: 40px;
+  width: 35px;
+  height: 35px;
   border-radius: 6px;
   box-shadow: 0 0 0 1px #c8c8c8;
   background: #ffffff;
@@ -199,8 +198,8 @@ async function speakText () {}
   padding-end: 6px;
   z-index: 10;
 }
-.copy-btn  { right: 68px; bottom: 6px; }
-.speak-btn { right: 20px; bottom: 6px; }
+.copy-button  { right: 68px; bottom: 6px; }
+.speak-button { right: 20px; bottom: 6px; }
 .mini ion-icon {
   font-size: 20px;
   color: var(--ion-color-medium);
