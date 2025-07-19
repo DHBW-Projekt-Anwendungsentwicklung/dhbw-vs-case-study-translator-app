@@ -67,6 +67,9 @@
             auto-grow
             :rows="5"
           ></ion-textarea>
+          <ion-spinner v-if="isDownloadingModel || isTranslating"
+             name="dots"
+             class="translate-spinner"/>
         </ion-item>
 
         <ion-button fill="clear" size="small" class="mini copy-button">
@@ -96,6 +99,8 @@ const sourceLanguage = ref('')
 const targetLanguage = ref('')
 const sourceText = ref('')
 const translatedText = ref('')
+const isDownloadingModel = ref(false)
+const isTranslating = ref(false)
 
 function debounce(fn: (...a: any[]) => any, d = 500) {
   let t: ReturnType<typeof setTimeout> | undefined
@@ -110,23 +115,21 @@ const debouncedTranslate = debounce(async () => {
     translatedText.value = ''
     return
   }
-  const loader = await loadingController.create({ message: 'Übersetze …' })
-  await loader.present()
+
+  isTranslating.value = true
+  translatedText.value = 'Übersetze …'
+
   try {
     translatedText.value = await mlkitTranslation(
       sourceText.value,
       sourceLanguage.value,
-      targetLanguage.value
+      targetLanguage.value,
+      (flag: boolean) => isDownloadingModel.value = flag
     )
   } catch {
-    const toast = await toastController.create({
-      message: 'Übersetzung fehlgeschlagen',
-      color: 'danger',
-      duration: 2500
-    })
-    toast.present()
+    translatedText.value = ''
   } finally {
-    loader.dismiss()
+    isTranslating.value = false
   }
 }, 300)
 
@@ -139,8 +142,6 @@ function swapLanguages() {
 
 watch([sourceText, sourceLanguage, targetLanguage], debouncedTranslate)
 
-async function copyToClipboard () {}
-async function speakText () {}
 </script>
 
 <style scoped>
@@ -207,5 +208,11 @@ async function speakText () {}
 .mini ion-icon {
   font-size: 20px;
   color: var(--ion-color-medium);
+}
+.translate-spinner {
+  position: absolute;
+  right: 50%;
+  bottom: 8px;
+  transform: translateX(50%);
 }
 </style>
