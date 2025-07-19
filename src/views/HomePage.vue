@@ -74,13 +74,16 @@
             auto-grow
             :rows="5"
           ></ion-textarea>
+          <ion-spinner v-if="isDownloadingModel || isTranslating"
+             name="dots"
+             class="translate-spinner"/>
         </ion-item>
 
         <ion-button fill="clear" size="small" class="mini copy-button" @click="copyToClipboard">
           <ion-icon :icon="copyOutline"></ion-icon>
         </ion-button>
 
-        <ion-button fill="clear" size="small" class="mini speak-button">
+        <ion-button fill="clear" size="small" class="mini speak-button" @click="speakText">
           <ion-icon :icon="volumeHighOutline"></ion-icon>
         </ion-button>
       </div>
@@ -93,18 +96,34 @@
 import { ref, watch } from 'vue'
 import {
   IonPage, IonHeader, IonToolbar, IonTitle, IonContent,
-  IonList, IonItem, IonSelect, IonSelectOption,
+  IonList, IonItem, IonSelect, IonSelectOption, onIonViewDidEnter,
   IonTextarea, IonButton, loadingController, toastController
 } from '@ionic/vue'
 import { Clipboard } from '@capacitor/clipboard'
 import { swapVertical, copyOutline, volumeHighOutline } from 'ionicons/icons'
 import { translate as mlkitTranslation} from '@/services/translation'
+import { SpeechSynthesis, QueueStrategy } from '@capawesome-team/capacitor-speech-synthesis'
 
 const sourceLanguage = ref('')
 const targetLanguage = ref('')
 const sourceText = ref('')
 const translatedText = ref('')
 const toastOpen = ref(false)
+const isDownloadingModel = ref(false)
+const isTranslating = ref(false)
+
+onIonViewDidEnter(async () => {
+  try {
+    await SpeechSynthesis.initialize()
+  } catch {
+    const t = await toastController.create({
+      message: 'Sprachausgabe nicht verfügbar',
+      duration: 2000,
+      color: 'warning'
+    })
+    t.present()
+  }
+})
 
 function debounce(fn: (...a: any[]) => any, d = 500) {
   let t: ReturnType<typeof setTimeout> | undefined
@@ -119,23 +138,21 @@ const debouncedTranslate = debounce(async () => {
     translatedText.value = ''
     return
   }
-  const loader = await loadingController.create({ message: 'Übersetze …' })
-  await loader.present()
+
+  isTranslating.value = true
+  translatedText.value = 'Übersetze …'
+
   try {
     translatedText.value = await mlkitTranslation(
       sourceText.value,
       sourceLanguage.value,
-      targetLanguage.value
+      targetLanguage.value,
+      (flag: boolean) => isDownloadingModel.value = flag
     )
   } catch {
-    const toast = await toastController.create({
-      message: 'Übersetzung fehlgeschlagen',
-      color: 'danger',
-      duration: 2500
-    })
-    toast.present()
+    translatedText.value = ''
   } finally {
-    loader.dismiss()
+    isTranslating.value = false
   }
 }, 300)
 
@@ -158,7 +175,35 @@ async function copyToClipboard() {
   await toast.present()
 }
 
-async function speakText () {}
+const langTag: Record<string,string> = {
+  de: 'de-DE',
+  en: 'en-US',
+  fr: 'fr-FR',
+  it: 'it-IT',
+  es: 'es-ES',
+}
+
+async function speakText () {
+  if (!translatedText.value) return
+  try {
+    await SpeechSynthesis.speak({
+      text: translatedText.value,
+      language: langTag[targetLanguage.value] ?? targetLanguage.value,
+      rate: 1.0,
+      pitch: 1.0,
+      volume: 1.0,
+      queueStrategy: QueueStrategy.Flush
+    })
+  } catch {
+    const t = await toastController.create({
+      message: 'Vorlesen fehlgeschlagen',
+      duration: 2500,
+      color: 'danger'
+    })
+    t.present()
+  }
+}
+
 </script>
 
 <style scoped>
@@ -225,5 +270,11 @@ async function speakText () {}
 .mini ion-icon {
   font-size: 20px;
   color: var(--ion-color-medium);
+}
+.translate-spinner {
+  position: absolute;
+  right: 50%;
+  bottom: 8px;
+  transform: translateX(50%);
 }
 </style>
