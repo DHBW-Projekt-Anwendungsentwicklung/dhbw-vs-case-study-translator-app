@@ -104,6 +104,7 @@ const sourceLanguage = ref('')
 const targetLanguage = ref('')
 const sourceText = ref('')
 const translatedText = ref('')
+const toastOpen = ref(false)
 
 function debounce(fn: (...a: any[]) => any, d = 500) {
   let t: ReturnType<typeof setTimeout> | undefined
@@ -147,13 +148,14 @@ function swapLanguages() {
 
 watch([sourceText, sourceLanguage, targetLanguage], debouncedTranslate)
 
-const textToCopy = ref('')
-
-const toastOpen = ref(false)
-
-async function copyToClipboard () {
-  await Clipboard.write({ string: textToCopy.value })
-  toastOpen.value = true
+async function copyToClipboard() {
+  await Clipboard.write({ string: translatedText.value })
+  const toast = await toastController.create({
+    message: 'Text in die Zwischenablage kopiert',
+    duration: 2000,
+    color: 'dark'
+  })
+  await toast.present()
 }
 
 async function speakText () {}
