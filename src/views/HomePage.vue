@@ -2,7 +2,7 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar class="app-toolbar">
-        <ion-title class="app-title">Übersetzer-App t</ion-title>
+        <ion-title class="app-title">Übersetzer-App</ion-title>
       </ion-toolbar>
     </ion-header>
 
