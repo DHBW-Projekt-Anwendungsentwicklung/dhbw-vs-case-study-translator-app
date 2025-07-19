@@ -19,7 +19,7 @@ jobs:
           java-version: 21
       - run: |
           echo "@capawesome-team:registry=https://npm.registry.capawesome.io" >> ~/.npmrc
-          echo "//npm.registry.capawesome.io/:_authToken=${{ secrets.CAPAWESOME_NPM_REGISTRY_TOKEN }}" >> ~/.npmrc
+          echo "//npm.registry.capawesome.io/:_authToken=${{ secrets.SPEECH_SYNTHESIS_LICENSE_KEY }}" >> ~/.npmrc
       - run: npm ci
       - run: npm run build
       - run: npx cap sync
