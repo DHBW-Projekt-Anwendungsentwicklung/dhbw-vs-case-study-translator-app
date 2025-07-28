@@ -28,7 +28,6 @@
           class="text-fields"
           v-model="sourceText"
           placeholder="Text hier eingeben"
-          auto-grow
           :rows="5"
         ></ion-textarea>
       </ion-item>
@@ -71,7 +70,6 @@
             readonly
             v-model="translatedText"
             placeholder="Übersetzung"
-            auto-grow
             :rows="5"
           ></ion-textarea>
           <ion-spinner v-if="isDownloadingModel || isTranslating"
@@ -222,6 +220,10 @@ async function speakText () {
   border: 1px solid #808080;
   border-radius: 6px;
   padding: 6px;
+
+  height: 150px;             
+  overflow-y: auto;          
+  resize: none;              
 }
 .divider {
   display: flex;
